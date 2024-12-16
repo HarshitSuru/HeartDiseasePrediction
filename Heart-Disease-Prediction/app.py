@@ -28,56 +28,55 @@ if selected == "Home":
     st.markdown(
         """
         ### 🌟 About This Application
-        The Health Assistant leverages a machine learning model to evaluate the likelihood of heart disease 
-        based on health indicators such as age, cholesterol levels, blood pressure, and more. 
-        It provides preliminary insights for individuals and healthcare professionals.
+        The Health Assistant uses a machine learning model to predict the likelihood of heart disease 
+        based on various health indicators (e.g., age, cholesterol, blood pressure). 
+        It provides insights for individuals and healthcare professionals.
 
-        ### 🔉 Note
-        Please note that this tool is intended for informational purposes only and does not replace 
-        professional medical advice. Always consult a qualified healthcare provider for accurate diagnosis and treatment.
+        ### 🔉 Important
+        This tool provides **preliminary insights** only. It is **not** a substitute for professional medical advice. Always consult a healthcare provider for a proper diagnosis.
         """
     )
 
 # Heart Disease Prediction page
 if selected == "Heart Disease Prediction":
-    st.title("🩺 Heart Disease Prediction System")
+    st.title("🩺 Heart Disease Prediction")
     st.markdown(
         """
-        Upload patient health data to predict the likelihood of heart disease and receive tailored advice.
+        **Upload patient data** to predict the likelihood of heart disease and receive advice on next steps.
 
-        ### 📖 How to Use
-        1. Navigate to the **Heart Disease Prediction** section using the sidebar.
-        2. Download the **Example Data** (provided below) to see the required format for the input file.
-        3. Upload your CSV or Excel file with health data for prediction.
-        4. Click **Predict Heart Disease** to generate predictions.
-        5. View the results and get actionable advice for affected individuals.
+        ### 📖 How to Use:
+        1. **Download the example data** (provided below) to see the required format for your input file.
+        2. **Upload your own data** in CSV or Excel format.
+        3. Click **Predict Heart Disease** to generate predictions.
+        4. View the results and get tips based on predictions.
 
-        ### 📝 Example Data
-        To help you get started, you can download an **example Excel file**. This file includes the following health attributes:
+        ### 📝 Example Data:
+        Download the **example file** with data for 12 individuals. This file contains health attributes that the model uses for predictions:
+        
+        - **Age**: Individual’s age.
+        - **Sex**: Gender (1 = male, 0 = female).
+        - **CP (Chest Pain Type)**: Classification of chest pain (0, 1, 2, 3).
+        - **Trestbps (Resting Blood Pressure)**: Blood pressure in mm Hg.
+        - **Chol (Serum Cholesterol)**: Cholesterol level in mg/dl.
+        - **Fbs (Fasting Blood Sugar)**: High fasting blood sugar (1 = true, 0 = false).
+        - **Restecg (Resting Electrocardiographic Results)**: Electrocardiogram results (0, 1, 2).
+        - **Thalach (Maximum Heart Rate)**: Max heart rate achieved.
+        - **Exang (Exercise Induced Angina)**: Angina during exercise (1 = yes, 0 = no).
+        - **Oldpeak**: Depression caused by exercise compared to rest.
+        - **Slope**: Slope of the peak exercise ST segment (0, 1, 2).
+        - **CA**: Number of major vessels colored by fluoroscopy (0-3).
+        - **Thal**: Thalassemia type (3 = normal, 6 = fixed defect, 7 = reversible defect).
+        - **CDM (Heart Disease)**: Pre-generated prediction (0 = no, 1 = yes).
 
-        - **Age**: The age of the individual.
-        - **Sex**: Gender of the individual (1 = male, 0 = female).
-        - **CP (Chest Pain Type)**: A classification of chest pain types (values: 0, 1, 2, 3).
-        - **Trestbps (Resting Blood Pressure)**: The resting blood pressure (mm Hg).
-        - **Chol (Serum Cholesterol)**: The cholesterol level (mg/dl).
-        - **Fbs (Fasting Blood Sugar)**: Whether the individual has high fasting blood sugar (1 = true, 0 = false).
-        - **Restecg (Resting Electrocardiographic Results)**: Results of the electrocardiogram (values: 0, 1, 2).
-        - **Thalach (Maximum Heart Rate)**: The maximum heart rate achieved.
-        - **Exang (Exercise Induced Angina)**: Whether the individual experiences angina during exercise (1 = yes, 0 = no).
-        - **Oldpeak**: Depression induced by exercise relative to rest.
-        - **Slope**: Slope of the peak exercise ST segment (values: 0, 1, 2).
-        - **CA**: Number of major vessels colored by fluoroscopy (values: 0-3).
-        - **Thal**: Type of thalassemia (values: 3 = normal, 6 = fixed defect, 7 = reversible defect).
-        - **CDM (Cardiovascular Disease Model)**: A pre-generated prediction indicating the presence of heart disease (0 = no, 1 = yes).
+        ### 📂 Download Example Data
+        The file contains data for **12 individuals**. Use this file to see how the model works. After downloading, upload it here to make predictions.
 
-        ### 📂 Download Example Patient Data
-        The example file contains data for **12 individuals**, and you can use this data to test the predictions of the model. Once you've downloaded the file, simply upload it to the app, and the model will generate predictions for each individual.
         """
     )
 
     # Add a download button for the example file
     st.subheader("📂 Download Example Patient Data")
-    example_file = 'example_patient_data.xlsx'  # Make sure this file exists in your project directory
+    example_file = 'example_patient_data.xlsx'  # Ensure this file exists in your project directory
     with open(example_file, 'rb') as file:
         st.download_button(
             label="Download Example Data",
@@ -86,26 +85,26 @@ if selected == "Heart Disease Prediction":
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         )
         
-    # File upload
-    st.subheader("📂 Upload Patient Data")
+    # File upload section
+    st.subheader("📂 Upload Your Patient Data")
     uploaded_file = st.file_uploader("Upload a CSV/Excel file with patient data:", type=["csv", "xlsx"])
 
-    # Load model
+    # Load the model
     heart_disease_model = None
     model_path = r'C:\Users\suruh\OneDrive\Desktop\HeartDiseasePrediction\Heart-Disease-Prediction\saved_models\heart_disease_model.sav'
 
     try:
         if os.path.exists(model_path):
             heart_disease_model = pickle.load(open(model_path, 'rb'))
-            st.success("Model successfully loaded! Please proceed with uploading data for prediction.")
+            st.success("Model loaded successfully! You can now upload your data for prediction.")
         else:
-            st.error(f"Model file not found at: {model_path}")
+            st.error(f"Model not found at {model_path}")
     except Exception as e:
         st.error(f"Error loading model: {e}")
 
     # Proceed if file is uploaded and model is loaded
     if uploaded_file is not None and heart_disease_model is not None:
-        # Read file
+        # Read the file
         try:
             if uploaded_file.type == "text/csv":
                 data = pd.read_csv(uploaded_file)
@@ -115,7 +114,7 @@ if selected == "Heart Disease Prediction":
             st.write("### Data Preview")
             st.dataframe(data.head())
 
-            # Visualize distributions of key features
+            # Visualizations (if relevant columns are present)
             st.write("### Data Insights")
             if 'age' in data.columns and 'chol' in data.columns:
                 fig = px.histogram(data, x="age", title="Age Distribution", nbins=20, color_discrete_sequence=['teal'])
@@ -152,58 +151,52 @@ if selected == "Heart Disease Prediction":
                                      color_discrete_sequence=['green', 'red'])
                         st.plotly_chart(fig)
 
+                        # Display advice for diseased individuals
                         if not diseased.empty:
                             st.subheader("⚠️ Advice for Individuals with Heart Disease")
                             st.markdown(
                                 """
-                                - **Seek immediate medical consultation.**
-                                - **Adopt a heart-healthy lifestyle**: balanced diet, regular exercise, and stress management.
-                                - **Follow prescribed treatments** and attend regular medical check-ups.
+                                - **Seek medical advice** immediately.
+                                - **Follow a heart-healthy lifestyle**: balanced diet, regular exercise, and stress management.
+                                - **Stay on prescribed medications** and have regular check-ups.
                                 """
                             )
                             st.write("### Affected Individuals")
                             st.dataframe(diseased[['age', 'sex', 'chol', 'trestbps', 'thalach', 'Prediction']])
 
-                            # Visualize demographic insights for diseased patients
-                            if 'sex' in diseased.columns:
-                                sex_distribution = diseased['sex'].value_counts().reset_index()
-                                sex_distribution.columns = ['Sex', 'Count']
-                                fig = px.bar(sex_distribution, x='Sex', y='Count', title="Gender Distribution (Affected)", 
-                                             color='Sex', color_discrete_sequence=['blue', 'pink'])
-                                st.plotly_chart(fig)
-
+                        # Display tips for unaffected individuals
                         if not undiseased.empty:
                             st.subheader("✅ Tips for Maintaining Heart Health")
                             st.markdown(
                                 """
                                 - **Eat a nutritious diet** rich in fruits, vegetables, and whole grains.
-                                - **Stay physically active** with regular exercise.
-                                - **Avoid smoking** and manage stress effectively.
-                                - **Monitor your health regularly.**
+                                - **Stay physically active**.
+                                - **Avoid smoking** and manage stress.
+                                - **Monitor your health** regularly.
                                 """
                             )
                             st.write("### Unaffected Individuals")
                             st.dataframe(undiseased[['age', 'sex', 'chol', 'trestbps', 'thalach', 'Prediction']])
                     except Exception as e:
-                        st.error(f"Prediction error: {e}")
+                        st.error(f"Error during prediction: {e}")
             else:
                 st.warning(f"Missing required columns: {', '.join([col for col in required_columns if col not in data.columns])}")
         except Exception as e:
-            st.error(f"File processing error: {e}")
+            st.error(f"Error processing the file: {e}")
     else:
         if uploaded_file is None:
-            st.info("Please upload a valid CSV or Excel file.")
+            st.info("Please upload a CSV or Excel file.")
         if heart_disease_model is None:
-            st.error("Model not loaded. Verify the model file path.")
+            st.error("Model not loaded. Verify the model path.")
 
 # About Us page
 if selected == "About Us":
     st.title("👨‍💼 About Us")
     st.markdown(
         """
-        ### Dedicated to leveraging technology for health risk prediction and management.
+        ### We aim to harness technology for better health management.
 
-        #### Connect with the Developer
+        #### Connect with the Developer:
         - [GitHub](https://github.com/HarshitSuru/)
         - [LinkedIn](https://www.linkedin.com/in/suru-harshit-4863372bb)
         - Email: [suruharshit2005@gmail.com](mailto:suruharshit2005@gmail.com)
