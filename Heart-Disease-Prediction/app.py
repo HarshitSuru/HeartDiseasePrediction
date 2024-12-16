@@ -63,7 +63,7 @@ if selected == "Heart Disease Prediction":
 
     # Load model
     heart_disease_model = None
-    model_path = 'C:/Users/suruh/OneDrive/Desktop/HARSHIT/Internships/Harshit/multiple-disease-prediction-streamlit-app-main/multiple-disease-prediction-streamlit-app-main/saved_models/heart_disease_model.sav'
+    model_path = 'C:/Users/suruh/OneDrive/Desktop/multiple-disease-prediction-streamlit-app-main/multiple-disease-prediction-streamlit-app-main/saved_models/heart_disease_model.sav'
 
     try:
         # Check if model file exists before loading
