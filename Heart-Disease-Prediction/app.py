@@ -47,12 +47,45 @@ if selected == "Heart Disease Prediction":
 
         ### 📖 How to Use
         1. Navigate to the **Heart Disease Prediction** section using the sidebar.
-        2. Upload a CSV or Excel file containing the required health information for each patient.
-        3. Click on the **Predict Heart Disease** button to generate predictions.
-        4. View the results and get actionable advice for affected individuals.
+        2. Download the **Example Data** (provided below) to see the required format for the input file.
+        3. Upload your CSV or Excel file with health data for prediction.
+        4. Click **Predict Heart Disease** to generate predictions.
+        5. View the results and get actionable advice for affected individuals.
+
+        ### 📝 Example Data
+        To help you get started, you can download an **example Excel file**. This file includes the following health attributes:
+
+        - **Age**: The age of the individual.
+        - **Sex**: Gender of the individual (1 = male, 0 = female).
+        - **CP (Chest Pain Type)**: A classification of chest pain types (values: 0, 1, 2, 3).
+        - **Trestbps (Resting Blood Pressure)**: The resting blood pressure (mm Hg).
+        - **Chol (Serum Cholesterol)**: The cholesterol level (mg/dl).
+        - **Fbs (Fasting Blood Sugar)**: Whether the individual has high fasting blood sugar (1 = true, 0 = false).
+        - **Restecg (Resting Electrocardiographic Results)**: Results of the electrocardiogram (values: 0, 1, 2).
+        - **Thalach (Maximum Heart Rate)**: The maximum heart rate achieved.
+        - **Exang (Exercise Induced Angina)**: Whether the individual experiences angina during exercise (1 = yes, 0 = no).
+        - **Oldpeak**: Depression induced by exercise relative to rest.
+        - **Slope**: Slope of the peak exercise ST segment (values: 0, 1, 2).
+        - **CA**: Number of major vessels colored by fluoroscopy (values: 0-3).
+        - **Thal**: Type of thalassemia (values: 3 = normal, 6 = fixed defect, 7 = reversible defect).
+        - **CDM (Cardiovascular Disease Model)**: A pre-generated prediction indicating the presence of heart disease (0 = no, 1 = yes).
+
+        ### 📂 Download Example Patient Data
+        The example file contains data for **12 individuals**, and you can use this data to test the predictions of the model. Once you've downloaded the file, simply upload it to the app, and the model will generate predictions for each individual.
         """
     )
 
+    # Add a download button for the example file
+    st.subheader("📂 Download Example Patient Data")
+    example_file = 'example_patient_data.xlsx'  # Make sure this file exists in your project directory
+    with open(example_file, 'rb') as file:
+        st.download_button(
+            label="Download Example Data",
+            data=file,
+            file_name="example_patient_data.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+        
     # File upload
     st.subheader("📂 Upload Patient Data")
     uploaded_file = st.file_uploader("Upload a CSV/Excel file with patient data:", type=["csv", "xlsx"])
