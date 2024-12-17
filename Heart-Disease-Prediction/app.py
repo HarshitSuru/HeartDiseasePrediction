@@ -1,4 +1,3 @@
-import os
 import pickle
 import pandas as pd
 import streamlit as st
@@ -85,44 +84,51 @@ if selected == "Heart Disease Prediction":
     
     # Add a download button for the example file
     st.subheader("📂 Download Example Patient Data")
-
-    # Get the path to the current directory of the app
-    example_file = os.path.join(os.path.dirname(__file__), 'example_patient_data.xlsx')
-
-    try:
-        if os.path.exists(example_file):  # Check if file exists before opening it
-            with open(example_file, 'rb') as file:
-                st.download_button(
-                    label="Download Example Data",
-                    data=file,
-                    file_name="example_patient_data.xlsx",
-                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                )
-        else:
-            st.error(f"❌ The file 'example_patient_data.xlsx' was not found in the directory: {os.path.dirname(__file__)}")
-    except Exception as e:
-        st.error(f"Error accessing the file: {e}")
+    st.markdown(
+        """
+        [👉 Click here to download the example file](https://github.com/HarshitSuru/example-data/raw/main/example_patient_data.xlsx)
+        """, unsafe_allow_html=True
+    )
     
     # File upload section
     st.subheader("📂 Upload Your Patient Data")
     uploaded_file = st.file_uploader("Upload a CSV/Excel file with patient data:", type=["csv", "xlsx"])
 
     # Load the model
-heart_disease_model = None
+    heart_disease_model = None
 
-# Use relative path to avoid absolute path issues
-model_path = os.path.join(os.path.dirname(__file__), 'saved_models', 'heart_disease_model.sav')
-
-try:
-    if os.path.exists(model_path):
-        with open(model_path, 'rb') as model_file:
+    try:
+        # Load the model from the same directory as the app
+        with open('saved_models/heart_disease_model.sav', 'rb') as model_file:
             heart_disease_model = pickle.load(model_file)
         st.success("✅ Model loaded successfully! You can now upload your data for prediction.")
-    else:
-        st.error(f"❌ Model not found at {model_path}")
-except Exception as e:
-    st.error(f"⚠️ Error loading model: {e}")
+    except Exception as e:
+        st.error(f"⚠️ Error loading model: {e}")
 
+    if uploaded_file and heart_disease_model:
+        try:
+            # Handle file upload
+            if uploaded_file.name.endswith('.csv'):
+                data = pd.read_csv(uploaded_file)
+            else:
+                data = pd.read_excel(uploaded_file)
+
+            # Display uploaded data
+            st.subheader("📊 Uploaded Data")
+            st.write(data.head())
+
+            # Make predictions
+            if st.button("Predict Heart Disease"):
+                predictions = heart_disease_model.predict(data)
+                data['Prediction'] = predictions
+                st.subheader("🔍 Predictions")
+                st.write(data)
+                
+                # Visualize predictions
+                fig = px.histogram(data, x='Prediction', title="Heart Disease Predictions", labels={'x': 'Prediction'}, text_auto=True)
+                st.plotly_chart(fig)
+        except Exception as e:
+            st.error(f"⚠️ Error processing file: {e}")
 
 # About Us page
 if selected == "About Us":
