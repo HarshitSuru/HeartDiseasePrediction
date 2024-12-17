@@ -84,20 +84,24 @@ if selected == "Heart Disease Prediction":
         """
     )
     
-    # Add a download button for the example file
+    # Add a download button for the example file from GitHub
     st.subheader("📂 Download Example Patient Data")
-    example_file_path = os.path.join(os.getcwd(), "example_patient_data.xlsx")
+    example_file_url = "https://github.com/HarshitSuru/HeartDiseasePrediction/raw/main/Heart-Disease-Prediction/example_patient_data.xlsx"
 
-    if os.path.exists(example_file_path):
-        with open(example_file_path, 'rb') as file:
+    try:
+        # Download example data file from GitHub
+        response = requests.get(example_file_url)
+        if response.status_code == 200:
             st.download_button(
                 label="Download Example Data",
-                data=file,
+                data=response.content,
                 file_name="example_patient_data.xlsx",
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             )
-    else:
-        st.error("❌ The example data file is missing. Please ensure 'example_patient_data.xlsx' is in the project directory.")
+        else:
+            st.error("❌ Failed to download example data from GitHub.")
+    except Exception as e:
+        st.error(f"⚠️ Error downloading example data: {e}")
     
     # File upload section
     st.subheader("📂 Upload Your Patient Data")
@@ -124,7 +128,7 @@ if selected == "Heart Disease Prediction":
 
     # Load the model from GitHub
     heart_disease_model = None
-    model_url = "https://github.com/HarshitSuru/HeartDiseasePrediction/raw/main/saved_models/heart_disease_model.sav"  # Update with the correct URL
+    model_url = "https://github.com/HarshitSuru/HeartDiseasePrediction/raw/main/Heart-Disease-Prediction/saved_models/heart_disease_model.sav"
 
     try:
         # Download model file from GitHub
