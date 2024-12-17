@@ -108,17 +108,21 @@ if selected == "Heart Disease Prediction":
     uploaded_file = st.file_uploader("Upload a CSV/Excel file with patient data:", type=["csv", "xlsx"])
 
     # Load the model
-    heart_disease_model = None
-    model_path = r'C:\Users\suruh\OneDrive\Desktop\HeartDiseasePrediction\Heart-Disease-Prediction\saved_models\heart_disease_model.sav'
+heart_disease_model = None
 
-    try:
-        if os.path.exists(model_path):
-            heart_disease_model = pickle.load(open(model_path, 'rb'))
-            st.success("Model loaded successfully! You can now upload your data for prediction.")
-        else:
-            st.error(f"Model not found at {model_path}")
-    except Exception as e:
-        st.error(f"Error loading model: {e}")
+# Use relative path to avoid absolute path issues
+model_path = os.path.join(os.path.dirname(__file__), 'saved_models', 'heart_disease_model.sav')
+
+try:
+    if os.path.exists(model_path):
+        with open(model_path, 'rb') as model_file:
+            heart_disease_model = pickle.load(model_file)
+        st.success("✅ Model loaded successfully! You can now upload your data for prediction.")
+    else:
+        st.error(f"❌ Model not found at {model_path}")
+except Exception as e:
+    st.error(f"⚠️ Error loading model: {e}")
+
 
 # About Us page
 if selected == "About Us":
