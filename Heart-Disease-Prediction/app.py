@@ -4,6 +4,7 @@ import pandas as pd
 import streamlit as st
 import plotly.express as px
 from streamlit_option_menu import option_menu
+import requests
 
 # Set page configuration
 st.set_page_config(
@@ -121,19 +122,23 @@ if selected == "Heart Disease Prediction":
         except Exception as e:
             st.error(f"⚠️ Error processing file: {e}")
 
-    # Load the model
+    # Load the model from GitHub
     heart_disease_model = None
+    model_url = "https://github.com/HarshitSuru/HeartDiseasePrediction/raw/main/saved_models/heart_disease_model.sav"  # Update with the correct URL
 
-    model_path = os.path.join(os.getcwd(), 'saved_models', 'heart_disease_model.sav')
-    if os.path.exists(model_path):
-        try:
-            with open(model_path, 'rb') as model_file:
+    try:
+        # Download model file from GitHub
+        response = requests.get(model_url)
+        if response.status_code == 200:
+            with open("heart_disease_model.sav", "wb") as model_file:
+                model_file.write(response.content)
+            with open("heart_disease_model.sav", "rb") as model_file:
                 heart_disease_model = pickle.load(model_file)
             st.success("✅ Model loaded successfully! You can now proceed with predictions.")
-        except Exception as e:
-            st.error(f"⚠️ Error loading model: {e}")
-    else:
-        st.error(f"❌ Model file is missing! Ensure 'saved_models/heart_disease_model.sav' is uploaded.")
+        else:
+            st.error("❌ Failed to download model file from GitHub.")
+    except Exception as e:
+        st.error(f"⚠️ Error loading model: {e}")
 
     if uploaded_file and heart_disease_model and not missing_columns:
         try:
