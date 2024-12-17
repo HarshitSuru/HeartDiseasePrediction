@@ -69,12 +69,12 @@ if selected == "Home":
 
 # Heart Disease Prediction page
 if selected == "Heart Disease Prediction":
-    st.title("🧬 Heart Disease Prediction")
+    st.title("🧀 Heart Disease Prediction")
     st.markdown(
         """
         **Upload patient data** to predict the likelihood of heart disease and receive advice on next steps.
 
-        ### 📖 How to Use:
+        ### 🔓 How to Use:
         1. **Download the example data** (provided below) to see the required format for your input file.
         2. **Upload your own data** in CSV or Excel format.
         3. Click **Predict Heart Disease** to generate predictions.
@@ -84,11 +84,18 @@ if selected == "Heart Disease Prediction":
     
     # Add a download button for the example file
     st.subheader("📂 Download Example Patient Data")
-    st.markdown(
-        """
-        [👉 Click here to download the example file](https://github.com/HarshitSuru/example-data/raw/main/example_patient_data.xlsx)
-        """, unsafe_allow_html=True
-    )
+    example_file_path = "example_patient_data.xlsx"
+
+    try:
+        with open(example_file_path, 'rb') as file:
+            st.download_button(
+                label="Download Example Data",
+                data=file,
+                file_name="example_patient_data.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            )
+    except FileNotFoundError:
+        st.error("❌ The example data file is missing. Please ensure 'example_patient_data.xlsx' is in the project directory.")
     
     # File upload section
     st.subheader("📂 Upload Your Patient Data")
@@ -102,6 +109,8 @@ if selected == "Heart Disease Prediction":
         with open('saved_models/heart_disease_model.sav', 'rb') as model_file:
             heart_disease_model = pickle.load(model_file)
         st.success("✅ Model loaded successfully! You can now upload your data for prediction.")
+    except FileNotFoundError:
+        st.error("❌ Model file is missing! Ensure 'saved_models/heart_disease_model.sav' is uploaded.")
     except Exception as e:
         st.error(f"⚠️ Error loading model: {e}")
 
@@ -114,7 +123,7 @@ if selected == "Heart Disease Prediction":
                 data = pd.read_excel(uploaded_file)
 
             # Display uploaded data
-            st.subheader("📊 Uploaded Data")
+            st.subheader("🔢 Uploaded Data")
             st.write(data.head())
 
             # Make predictions
