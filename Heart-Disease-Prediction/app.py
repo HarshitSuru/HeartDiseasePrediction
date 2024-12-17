@@ -145,19 +145,26 @@ if selected == "Heart Disease Prediction":
         st.error(f"⚠️ Error loading model: {e}")
 
     if uploaded_file and heart_disease_model and not missing_columns:
-        try:
-            # Make predictions
-            if st.button("Predict Heart Disease"):
-                predictions = heart_disease_model.predict(data)
-                data['Prediction'] = predictions
-                st.subheader("🔍 Predictions")
-                st.write(data)
-                
-                # Visualize predictions
-                fig = px.histogram(data, x='Prediction', title="Heart Disease Predictions", labels={'x': 'Prediction'}, text_auto=True)
-                st.plotly_chart(fig)
-        except Exception as e:
-            st.error(f"⚠️ Error during prediction: {e}")
+    try:
+        # Ensure only the required columns are in the data
+        required_columns = ['age', 'sex', 'cp', 'trestbps', 'chol', 'fbs', 'restecg', 'thalach', 'exang', 'oldpeak', 'slope', 'ca', 'thal']
+        
+        # Keep only the required columns (drop any extra ones like 'cdm')
+        data = data[required_columns]
+        
+        # Make predictions
+        if st.button("Predict Heart Disease"):
+            predictions = heart_disease_model.predict(data)
+            data['Prediction'] = predictions
+            st.subheader("🔍 Predictions")
+            st.write(data)
+            
+            # Visualize predictions
+            fig = px.histogram(data, x='Prediction', title="Heart Disease Predictions", labels={'x': 'Prediction'}, text_auto=True)
+            st.plotly_chart(fig)
+    except Exception as e:
+        st.error(f"⚠️ Error during prediction: {e}")
+
 
 # About Us page
 if selected == "About Us":
