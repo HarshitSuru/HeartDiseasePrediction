@@ -85,7 +85,7 @@ if selected == "Heart Disease Prediction":
     
     # Add a download button for the example file
     st.subheader("📂 Download Example Patient Data")
-    example_file_path = "example_patient_data.xlsx"
+    example_file_path = os.path.join(os.getcwd(), "example_patient_data.xlsx")
 
     if os.path.exists(example_file_path):
         with open(example_file_path, 'rb') as file:
@@ -102,32 +102,41 @@ if selected == "Heart Disease Prediction":
     st.subheader("📂 Upload Your Patient Data")
     uploaded_file = st.file_uploader("Upload a CSV/Excel file with patient data:", type=["csv", "xlsx"])
 
-    # Load the model
-    heart_disease_model = None
-
-    model_path = 'saved_models/heart_disease_model.sav'
-    if os.path.exists(model_path):
+    if uploaded_file:
         try:
-            with open(model_path, 'rb') as model_file:
-                heart_disease_model = pickle.load(model_file)
-            st.success("✅ Model loaded successfully! You can now upload your data for prediction.")
-        except Exception as e:
-            st.error(f"⚠️ Error loading model: {e}")
-    else:
-        st.error(f"❌ Model file is missing! Ensure '{model_path}' is uploaded.")
-
-    if uploaded_file and heart_disease_model:
-        try:
-            # Handle file upload
+            # Check and display file structure
             if uploaded_file.name.endswith('.csv'):
                 data = pd.read_csv(uploaded_file)
             else:
                 data = pd.read_excel(uploaded_file)
 
-            # Display uploaded data
-            st.subheader("🔢 Uploaded Data")
-            st.write(data.head())
+            required_columns = ['age', 'sex', 'cp', 'trestbps', 'chol', 'fbs', 'restecg', 'thalach', 'exang', 'oldpeak', 'slope', 'ca', 'thal']
+            missing_columns = [col for col in required_columns if col not in data.columns]
 
+            if missing_columns:
+                st.error(f"⚠️ The uploaded file is missing the following required columns: {', '.join(missing_columns)}")
+            else:
+                st.subheader("🔢 Uploaded Data")
+                st.write(data.head())
+        except Exception as e:
+            st.error(f"⚠️ Error processing file: {e}")
+
+    # Load the model
+    heart_disease_model = None
+
+    model_path = os.path.join(os.getcwd(), 'saved_models', 'heart_disease_model.sav')
+    if os.path.exists(model_path):
+        try:
+            with open(model_path, 'rb') as model_file:
+                heart_disease_model = pickle.load(model_file)
+            st.success("✅ Model loaded successfully! You can now proceed with predictions.")
+        except Exception as e:
+            st.error(f"⚠️ Error loading model: {e}")
+    else:
+        st.error(f"❌ Model file is missing! Ensure 'saved_models/heart_disease_model.sav' is uploaded.")
+
+    if uploaded_file and heart_disease_model and not missing_columns:
+        try:
             # Make predictions
             if st.button("Predict Heart Disease"):
                 predictions = heart_disease_model.predict(data)
@@ -139,7 +148,7 @@ if selected == "Heart Disease Prediction":
                 fig = px.histogram(data, x='Prediction', title="Heart Disease Predictions", labels={'x': 'Prediction'}, text_auto=True)
                 st.plotly_chart(fig)
         except Exception as e:
-            st.error(f"⚠️ Error processing file: {e}")
+            st.error(f"⚠️ Error during prediction: {e}")
 
 # About Us page
 if selected == "About Us":
