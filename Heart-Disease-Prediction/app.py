@@ -1,3 +1,4 @@
+import os
 import pickle
 import pandas as pd
 import streamlit as st
@@ -69,7 +70,7 @@ if selected == "Home":
 
 # Heart Disease Prediction page
 if selected == "Heart Disease Prediction":
-    st.title("🧀 Heart Disease Prediction")
+    st.title("🧬 Heart Disease Prediction")
     st.markdown(
         """
         **Upload patient data** to predict the likelihood of heart disease and receive advice on next steps.
@@ -86,7 +87,7 @@ if selected == "Heart Disease Prediction":
     st.subheader("📂 Download Example Patient Data")
     example_file_path = "example_patient_data.xlsx"
 
-    try:
+    if os.path.exists(example_file_path):
         with open(example_file_path, 'rb') as file:
             st.download_button(
                 label="Download Example Data",
@@ -94,7 +95,7 @@ if selected == "Heart Disease Prediction":
                 file_name="example_patient_data.xlsx",
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             )
-    except FileNotFoundError:
+    else:
         st.error("❌ The example data file is missing. Please ensure 'example_patient_data.xlsx' is in the project directory.")
     
     # File upload section
@@ -104,15 +105,16 @@ if selected == "Heart Disease Prediction":
     # Load the model
     heart_disease_model = None
 
-    try:
-        # Load the model from the same directory as the app
-        with open('saved_models/heart_disease_model.sav', 'rb') as model_file:
-            heart_disease_model = pickle.load(model_file)
-        st.success("✅ Model loaded successfully! You can now upload your data for prediction.")
-    except FileNotFoundError:
-        st.error("❌ Model file is missing! Ensure 'saved_models/heart_disease_model.sav' is uploaded.")
-    except Exception as e:
-        st.error(f"⚠️ Error loading model: {e}")
+    model_path = 'saved_models/heart_disease_model.sav'
+    if os.path.exists(model_path):
+        try:
+            with open(model_path, 'rb') as model_file:
+                heart_disease_model = pickle.load(model_file)
+            st.success("✅ Model loaded successfully! You can now upload your data for prediction.")
+        except Exception as e:
+            st.error(f"⚠️ Error loading model: {e}")
+    else:
+        st.error(f"❌ Model file is missing! Ensure '{model_path}' is uploaded.")
 
     if uploaded_file and heart_disease_model:
         try:
