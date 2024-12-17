@@ -66,6 +66,29 @@ if selected == "Home":
 
         ### 🔉 Important
         This tool provides **preliminary insights** only. It is **not** a substitute for professional medical advice. Always consult a healthcare provider for a proper diagnosis.
+
+        ### ❤️ What is Heart Disease?
+        Heart disease refers to a range of conditions that affect the heart, including coronary artery disease, heart failure, arrhythmia, and others. The most common cause of heart disease is atherosclerosis (narrowing of the blood vessels due to a build-up of fatty deposits). 
+
+        #### Risk Factors:
+        - High blood pressure
+        - High cholesterol
+        - Smoking
+        - Diabetes
+        - Family history of heart disease
+        - Sedentary lifestyle
+        - Obesity
+        - Poor diet
+
+        #### Preventive Measures:
+        - Maintain a healthy diet with less saturated fat, sugar, and salt.
+        - Regular physical activity (at least 30 minutes of moderate exercise per day).
+        - Avoid smoking and excessive alcohol consumption.
+        - Monitor blood pressure, cholesterol, and blood sugar levels.
+        - Manage stress through relaxation techniques like yoga or meditation.
+
+        ### 📈 Prediction Insights
+        This app will help assess the likelihood of heart disease based on your medical data. If you receive a positive prediction, it is essential to follow up with a healthcare provider for proper diagnostic tests like ECG, cholesterol screening, and stress tests.
         """
     )
 
@@ -162,6 +185,28 @@ if selected == "Heart Disease Prediction":
                 # Visualize predictions
                 fig = px.histogram(data, x='Prediction', title="Heart Disease Predictions", labels={'x': 'Prediction'}, text_auto=True)
                 st.plotly_chart(fig)
+
+                # Detailed Advice based on predictions
+                st.subheader("⚠️ Next Steps and Recommendations")
+                for index, row in data.iterrows():
+                    if row['Prediction'] == 1:
+                        st.write(f"Patient {index+1} may be at risk for heart disease.")
+                        st.write("""
+                        **Recommendations for High-Risk Individuals:**
+                        - Consult with a healthcare provider for a thorough examination.
+                        - Get diagnostic tests such as an ECG, cholesterol test, and stress test.
+                        - If diagnosed with heart disease, adhere to prescribed medications and treatments.
+                        - Follow lifestyle changes: healthy diet, regular exercise, and stress management.
+                        """)
+                    else:
+                        st.write(f"Patient {index+1} is not at risk for heart disease.")
+                        st.write("""
+                        **Recommendations for Low-Risk Individuals:**
+                        - Maintain a healthy lifestyle with regular physical activity.
+                        - Continue monitoring health metrics such as blood pressure, cholesterol, and blood sugar levels.
+                        - Schedule regular check-ups with your doctor.
+                        """)
+
         except Exception as e:
             st.error(f"⚠️ Error during prediction: {e}")
 
