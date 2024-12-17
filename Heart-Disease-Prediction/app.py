@@ -166,7 +166,7 @@ if selected == "Heart Disease Prediction":
                 st.plotly_chart(fig_sex)
                 
                 st.markdown("### Prediction Overview:")
-                prediction_count = data['Prediction'].value_counts()
+                prediction_count = data['Prediction'].value_counts() if 'Prediction' in data.columns else pd.Series({0: 0, 1: 0})
                 fig_pred = px.bar(x=prediction_count.index, y=prediction_count.values, title="Heart Disease Predictions", labels={'x': 'Prediction', 'y': 'Count'})
                 st.plotly_chart(fig_pred)
 
@@ -245,5 +245,8 @@ if selected == "About Us":
         - [GitHub](https://github.com/HarshitSuru/)
         - [LinkedIn](https://www.linkedin.com/in/suru-harshit-4863372bb)
         - Email: [suruharshit2005@gmail.com](mailto:suruharshit2005@gmail.com)
+
+        #### Disclaimer:
+        This tool provides **preliminary insights** into heart disease risk and is **not** intended for use as a diagnostic tool. Please consult your healthcare provider for any medical concerns.
         """
     )
