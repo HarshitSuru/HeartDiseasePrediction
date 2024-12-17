@@ -37,8 +37,12 @@ with st.sidebar:
             background-color: #F39C12 !important;
             color: #ffffff !important;
         }
+        .css-1cpxqw2 .nav-link-selected {
+            background-color: #F39C12;
+            color: #ffffff;
+        }
     </style>""", unsafe_allow_html=True)
-    
+
     selected = option_menu(
         "Health Assistant",
         ["Home", "Heart Disease Prediction", "About Us"],
@@ -146,6 +150,26 @@ if selected == "Heart Disease Prediction":
             else:
                 st.subheader("🔢 Uploaded Data")
                 st.write(data.head())
+                
+                # Visualization of data features
+                st.subheader("📊 Data Analysis & Visualizations")
+                st.markdown("### Age Distribution:")
+                fig_age = px.histogram(data, x='age', title="Age Distribution", labels={'age': 'Age'})
+                st.plotly_chart(fig_age)
+                
+                st.markdown("### Cholesterol Levels:")
+                fig_chol = px.histogram(data, x='chol', title="Cholesterol Levels Distribution", labels={'chol': 'Cholesterol Level'})
+                st.plotly_chart(fig_chol)
+                
+                st.markdown("### Sex Distribution:")
+                fig_sex = px.pie(data, names='sex', title="Sex Distribution", labels={'sex': 'Sex'}, hole=0.3)
+                st.plotly_chart(fig_sex)
+                
+                st.markdown("### Prediction Overview:")
+                prediction_count = data['Prediction'].value_counts()
+                fig_pred = px.bar(x=prediction_count.index, y=prediction_count.values, title="Heart Disease Predictions", labels={'x': 'Prediction', 'y': 'Count'})
+                st.plotly_chart(fig_pred)
+
         except Exception as e:
             st.error(f"⚠️ Error processing file: {e}")
 
