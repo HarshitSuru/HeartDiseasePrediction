@@ -115,55 +115,53 @@ if selected == "Heart Disease Prediction":
             else:
                 data = pd.read_excel(uploaded_file)
 
-            required_columns = ['age', 'sex', 'cp', 'trestbps', 'chol', 'fbs', 'restecg', 'thalach', 'exang', 'oldpeak', 'slope', 'ca', 'thal','cdm']
+            required_columns = ['age', 'sex', 'cp', 'trestbps', 'chol', 'fbs', 'restecg', 'thalach', 'exang', 'oldpeak', 'slope', 'ca', 'thal']
             missing_columns = [col for col in required_columns if col not in data.columns]
 
             if missing_columns:
                 st.error(f"⚠️ The uploaded file is missing the following required columns: {', '.join(missing_columns)}")
             else:
+                # Display the first few rows of the data
                 st.subheader("🔢 Uploaded Data")
                 st.write(data.head())
+                
+                # Ensure only the required columns are included in the data
+                data = data[required_columns]
+
+                # Load the model from GitHub
+                heart_disease_model = None
+                model_url = "https://github.com/HarshitSuru/HeartDiseasePrediction/raw/main/Heart-Disease-Prediction/saved_models/heart_disease_model.sav"
+
+                try:
+                    # Download model file from GitHub
+                    response = requests.get(model_url)
+                    if response.status_code == 200:
+                        with open("heart_disease_model.sav", "wb") as model_file:
+                            model_file.write(response.content)
+                        with open("heart_disease_model.sav", "rb") as model_file:
+                            heart_disease_model = pickle.load(model_file)
+                        st.success("✅ Model loaded successfully! You can now proceed with predictions.")
+                    else:
+                        st.error("❌ Failed to download model file from GitHub.")
+                except Exception as e:
+                    st.error(f"⚠️ Error loading model: {e}")
+
+                if heart_disease_model:
+                    try:
+                        # Make predictions
+                        if st.button("Predict Heart Disease"):
+                            predictions = heart_disease_model.predict(data)
+                            data['Prediction'] = predictions
+                            st.subheader("🔍 Predictions")
+                            st.write(data)
+                            
+                            # Visualize predictions
+                            fig = px.histogram(data, x='Prediction', title="Heart Disease Predictions", labels={'x': 'Prediction'}, text_auto=True)
+                            st.plotly_chart(fig)
+                    except Exception as e:
+                        st.error(f"⚠️ Error during prediction: {e}")
         except Exception as e:
             st.error(f"⚠️ Error processing file: {e}")
-
-    # Load the model from GitHub
-    heart_disease_model = None
-    model_url = "https://github.com/HarshitSuru/HeartDiseasePrediction/raw/main/Heart-Disease-Prediction/saved_models/heart_disease_model.sav"
-
-    try:
-        # Download model file from GitHub
-        response = requests.get(model_url)
-        if response.status_code == 200:
-            with open("heart_disease_model.sav", "wb") as model_file:
-                model_file.write(response.content)
-            with open("heart_disease_model.sav", "rb") as model_file:
-                heart_disease_model = pickle.load(model_file)
-            st.success("✅ Model loaded successfully! You can now proceed with predictions.")
-        else:
-            st.error("❌ Failed to download model file from GitHub.")
-    except Exception as e:
-        st.error(f"⚠️ Error loading model: {e}")
-
-    if uploaded_file and heart_disease_model and not missing_columns:
-        try:
-            # Ensure only the required columns are in the data
-            required_columns = ['age', 'sex', 'cp', 'trestbps', 'chol', 'fbs', 'restecg', 'thalach', 'exang', 'oldpeak', 'slope', 'ca', 'thal']
-            
-            # Keep only the required columns (drop any extra ones like 'cdm')
-            data = data[required_columns]
-            
-            # Make predictions
-            if st.button("Predict Heart Disease"):
-                predictions = heart_disease_model.predict(data)
-                data['Prediction'] = predictions
-                st.subheader("🔍 Predictions")
-                st.write(data)
-                
-                # Visualize predictions
-                fig = px.histogram(data, x='Prediction', title="Heart Disease Predictions", labels={'x': 'Prediction'}, text_auto=True)
-                st.plotly_chart(fig)
-        except Exception as e:
-            st.error(f"⚠️ Error during prediction: {e}")
 
 # About Us page
 if selected == "About Us":
