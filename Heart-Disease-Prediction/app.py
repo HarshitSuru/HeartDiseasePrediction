@@ -4,6 +4,8 @@ import streamlit as st
 import pandas as pd
 import requests
 from io import BytesIO
+import matplotlib.pyplot as plt
+import seaborn as sns
 from streamlit_option_menu import option_menu
 
 # Set page configuration
@@ -25,9 +27,9 @@ st.markdown(sidebar_style, unsafe_allow_html=True)
 # Sidebar for navigation
 with st.sidebar:
     selected = option_menu('Heart Disease Prediction System',
-                           ['Heart Disease Prediction'],
+                           ['Home', 'About', 'Heart Disease Prediction'],
                            menu_icon='hospital-fill',
-                           icons=['heart'],
+                           icons=['house', 'info-circle', 'heart'],
                            default_index=0,
                            styles={
                                "container": {"padding": "2px", "background-color": "#34495E"},
@@ -53,6 +55,57 @@ heart_disease_model = download_model()
 # Function to handle predictions
 def get_predictions(model, user_input):
     return model.predict([user_input])
+
+# Home Page
+if selected == 'Home':
+    st.title("Welcome to Heart Disease Prediction System")
+    st.markdown("""
+    This application uses machine learning to predict whether a person is at risk of heart disease based on various health metrics.
+    You can either input your details directly or upload a file with heart disease data for prediction.
+    - Use the **Heart Disease Prediction** tab to input your details and get a prediction.
+    - Use the **Upload a file** option to predict heart disease for multiple entries at once.
+    """)
+    st.image("https://www.w3schools.com/w3images/heart.jpg", use_column_width=True)
+
+# About Page
+if selected == 'About':
+    st.title("About this Project")
+
+    # Project Description
+    st.header("Overview")
+    st.markdown("""
+    This web application is a **Heart Disease Prediction System** built using **Streamlit** and machine learning algorithms. The model predicts whether a person is at risk of heart disease based on health parameters like age, cholesterol levels, and maximum heart rate.
+
+    ### Key Features:
+    - **Heart Disease Prediction**: Predict whether a person is at risk of heart disease.
+    - **Bulk Predictions**: Upload a CSV/Excel file to predict heart disease for multiple entries at once.
+    - **Correlation Visualization**: A heatmap to visualize the correlation between different health features.
+    
+    ## Technology Stack:
+    - **Streamlit**: For building the interactive web interface.
+    - **Scikit-learn**: For creating and training the heart disease prediction model.
+    - **Matplotlib & Seaborn**: For creating visualizations (like heatmaps).
+    """)
+    
+    # About Us Section
+    st.header("About Us")
+    st.markdown("""
+    We are a team of data science enthusiasts and health experts aiming to leverage the power of machine learning to provide solutions in the medical field. Our goal is to make healthcare predictions more accessible and accurate.
+
+    ### Our Mission:
+    Our mission is to provide an easy-to-use platform for heart disease prediction that can help individuals assess their risk and make informed health decisions.
+
+    ### Meet Our Team:
+    - **Harshit Suru**: Data Scientist, Machine Learning Specialist
+    - **John Doe**: Health Consultant, Cardiologist
+    - **Jane Smith**: Frontend Developer, UI/UX Designer
+
+    Feel free to reach out to us at [email@domain.com](mailto:email@domain.com).
+
+    ### Project Link:
+    [GitHub Repository](https://github.com/HarshitSuru/HeartDiseasePrediction)
+    """)
+    st.image("https://www.w3schools.com/w3images/team.jpg", caption="Our Team", use_column_width=True)
 
 # Heart Disease Prediction Page
 if selected == 'Heart Disease Prediction':
@@ -106,7 +159,39 @@ if selected == 'Heart Disease Prediction':
                     st.subheader("Prediction Results")
                     st.write(data)
 
+                    # Visualize results
+                    st.subheader("Correlation Heatmap")
+                    corr = data.corr()
+                    plt.figure(figsize=(12, 8))
+                    sns.heatmap(corr, annot=True, cmap='coolwarm', fmt='.2f')
+                    st.pyplot()
+
             except Exception as e:
                 st.error(f"Error during prediction: {e}")
         else:
             st.error("Model could not be loaded. Please try again.")
+    
+    # When no file is uploaded, prediction from input fields
+    if uploaded_file is None:
+        # Ensure all inputs are numeric
+        user_input = [
+            float(age), float(sex), float(cp), float(trestbps), float(chol), float(fbs),
+            float(restecg), float(thalach), float(exang), float(oldpeak), float(slope), 
+            float(ca), float(thal)
+        ]
+        
+        # Create a button for prediction
+        if st.button('Predict Heart Disease'):
+            # Validate input
+            if heart_disease_model:
+                try:
+                    # Get prediction based on the user's input
+                    prediction = heart_disease_model.predict([user_input])
+                    if prediction[0] == 1:
+                        st.success("The person is at risk of heart disease.")
+                    else:
+                        st.success("The person does not have heart disease.")
+                except Exception as e:
+                    st.error(f"Error during prediction: {e}")
+            else:
+                st.error("Model is not loaded properly. Please try again.")
