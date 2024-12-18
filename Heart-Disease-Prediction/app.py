@@ -125,7 +125,7 @@ if selected == "Heart Disease Prediction":
                 st.subheader("🔢 Uploaded Data")
                 st.write(data.head())
                 
-                # Ensure only the required columns are included in the data
+                # Ensure all rows are considered, and drop extra columns
                 data = data[required_columns]
 
                 # Load the model from GitHub
@@ -148,7 +148,7 @@ if selected == "Heart Disease Prediction":
 
                 if heart_disease_model:
                     try:
-                        # Make predictions
+                        # Make predictions on all rows of data
                         if st.button("Predict Heart Disease"):
                             predictions = heart_disease_model.predict(data)
                             data['Prediction'] = predictions
