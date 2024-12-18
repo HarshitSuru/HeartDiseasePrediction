@@ -89,49 +89,53 @@ if selected == "Heart Disease Prediction":
     # File upload section
     uploaded_file = st.file_uploader("Upload a CSV/Excel file with patient data:", type=["csv", "xlsx"])
 
+    # Load model only once and store in session state
+    if 'heart_disease_model' not in st.session_state:
+        model_url = "https://github.com/HarshitSuru/HeartDiseasePrediction/raw/main/Heart-Disease-Prediction/saved_models/heart_disease_model.sav"
+        try:
+            response = requests.get(model_url)
+            if response.status_code == 200:
+                with open("heart_disease_model.sav", "wb") as model_file:
+                    model_file.write(response.content)
+                with open("heart_disease_model.sav", "rb") as model_file:
+                    heart_disease_model = pickle.load(model_file)
+                st.session_state.heart_disease_model = heart_disease_model
+                st.success("✅ Model loaded successfully! You can now proceed with predictions.")
+            else:
+                st.error("❌ Failed to download model file from GitHub.")
+        except Exception as e:
+            st.error(f"⚠️ Error loading model: {e}")
+    else:
+        heart_disease_model = st.session_state.heart_disease_model
+
     if uploaded_file:
         try:
             if uploaded_file.name.endswith('.csv'):
-                data = pd.read_csv(uploaded_file)
+                st.session_state.data = pd.read_csv(uploaded_file)
             else:
-                data = pd.read_excel(uploaded_file)
+                st.session_state.data = pd.read_excel(uploaded_file)
 
             required_columns = ['age', 'sex', 'cp', 'trestbps', 'chol', 'fbs', 'restecg', 'thalach', 'exang', 'oldpeak', 'slope', 'ca', 'thal']
-            missing_columns = [col for col in required_columns if col not in data.columns]
+            missing_columns = [col for col in required_columns if col not in st.session_state.data.columns]
 
             if missing_columns:
                 st.error(f"⚠️ The uploaded file is missing: {', '.join(missing_columns)}")
             else:
                 st.subheader("🔢 Uploaded Data")
-                st.write(data.head())
+                st.write(st.session_state.data.head())
                 
                 # Visualizations
                 st.subheader("📊 Data Analysis & Visualizations")
-                st.plotly_chart(px.histogram(data, x='age', title="Age Distribution", labels={'age': 'Age'}))
-                st.plotly_chart(px.histogram(data, x='chol', title="Cholesterol Levels Distribution", labels={'chol': 'Cholesterol Level'}))
-                st.plotly_chart(px.pie(data, names='sex', title="Sex Distribution", hole=0.3))
+                st.plotly_chart(px.histogram(st.session_state.data, x='age', title="Age Distribution", labels={'age': 'Age'}))
+                st.plotly_chart(px.histogram(st.session_state.data, x='chol', title="Cholesterol Levels Distribution", labels={'chol': 'Cholesterol Level'}))
+                st.plotly_chart(px.pie(st.session_state.data, names='sex', title="Sex Distribution", hole=0.3))
 
         except Exception as e:
             st.error(f"⚠️ Error processing file: {e}")
 
-    # Load model
-    model_url = "https://github.com/HarshitSuru/HeartDiseasePrediction/raw/main/Heart-Disease-Prediction/saved_models/heart_disease_model.sav"
-    try:
-        response = requests.get(model_url)
-        if response.status_code == 200:
-            with open("heart_disease_model.sav", "wb") as model_file:
-                model_file.write(response.content)
-            with open("heart_disease_model.sav", "rb") as model_file:
-                heart_disease_model = pickle.load(model_file)
-            st.success("✅ Model loaded successfully! You can now proceed with predictions.")
-        else:
-            st.error("❌ Failed to download model file from GitHub.")
-    except Exception as e:
-        st.error(f"⚠️ Error loading model: {e}")
-
-    if uploaded_file and 'heart_disease_model' in locals() and not missing_columns:
+    if 'data' in st.session_state and heart_disease_model:
         try:
-            data = data[required_columns]
+            data = st.session_state.data[required_columns]  # Ensure only the required columns are passed to the model
             if st.button("Predict Heart Disease"):
                 predictions = heart_disease_model.predict(data)
                 st.subheader("🩺 Prediction Results")
@@ -149,6 +153,7 @@ if selected == "Heart Disease Prediction":
                 )
         except Exception as e:
             st.error(f"⚠️ Error during prediction: {e}")
+
 # About Us page
 if selected == "About Us":
     st.title("👨‍💼 About Us")
@@ -166,4 +171,3 @@ if selected == "About Us":
         - This application is a supportive tool, not a diagnostic device. Always consult medical professionals for health concerns.
         """
     )
-
