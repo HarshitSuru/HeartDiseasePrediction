@@ -13,43 +13,14 @@ st.set_page_config(
     page_icon="🧑‍⚕️",
 )
 
-# Sidebar navigation with modern design
+# Sidebar navigation
 with st.sidebar:
-    st.markdown("""<style>
-        .css-1cpxqw2 a {
-            font-size: 14px !important;
-            font-weight: 600 !important;
-            color: #ffffff !important;
-        }
-        .css-1cpxqw2 a:hover {
-            color: #F39C12 !important;
-        }
-        .css-1cpxqw2 .nav-link {
-            border-radius: 8px !important;
-            margin: 4px 0;
-            padding: 6px 10px !important;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .css-1cpxqw2 .nav-link:hover {
-            background-color: #F39C12 !important;
-            color: #ffffff !important;
-        }
-        .css-1cpxqw2 .nav-link-selected {
-            background-color: #F39C12;
-            color: #ffffff;
-        }
-    </style>""", unsafe_allow_html=True)
-
     selected = option_menu(
         "Health Assistant",
         ["Home", "Heart Disease Prediction", "About Us"],
         icons=["house", "heart", "info-circle"],
         menu_icon="activity",  
         default_index=0,
-        orientation="vertical",
         styles={
             "container": {"padding": "2px", "background-color": "#34495E"},
             "icon": {"color": "#F39C12", "font-size": "18px"},  
@@ -65,34 +36,23 @@ if selected == "Home":
         """
         ### 🌟 About This Application
         The Health Assistant uses a machine learning model to predict the likelihood of heart disease 
-        based on various health indicators (e.g., age, cholesterol, blood pressure). 
-        It provides insights for individuals and healthcare professionals.
+        based on various health indicators.
 
         ### 🔉 Important
-        This tool provides **preliminary insights** only. It is **not** a substitute for professional medical advice. Always consult a healthcare provider for a proper diagnosis.
+        This tool provides **preliminary insights** only. Always consult a healthcare provider for a proper diagnosis.
 
         ### ❤️ What is Heart Disease?
-        Heart disease refers to a range of conditions that affect the heart, including coronary artery disease, heart failure, arrhythmia, and others. The most common cause of heart disease is atherosclerosis (narrowing of the blood vessels due to a build-up of fatty deposits). 
-
-        #### Risk Factors:
-        - High blood pressure
-        - High cholesterol
-        - Smoking
-        - Diabetes
-        - Family history of heart disease
-        - Sedentary lifestyle
-        - Obesity
-        - Poor diet
+        Heart disease refers to conditions affecting the heart, including coronary artery disease and others. Common causes include high blood pressure, high cholesterol, and smoking.
 
         #### Preventive Measures:
-        - Maintain a healthy diet with less saturated fat, sugar, and salt.
-        - Regular physical activity (at least 30 minutes of moderate exercise per day).
-        - Avoid smoking and excessive alcohol consumption.
-        - Monitor blood pressure, cholesterol, and blood sugar levels.
-        - Manage stress through relaxation techniques like yoga or meditation.
+        - Healthy diet
+        - Regular exercise
+        - Avoid smoking and excessive alcohol
+        - Monitor blood pressure, cholesterol, and sugar levels
+        - Manage stress
 
         ### 📈 Prediction Insights
-        This app will help assess the likelihood of heart disease based on your medical data. If you receive a positive prediction, it is essential to follow up with a healthcare provider for proper diagnostic tests like ECG, cholesterol screening, and stress tests.
+        This app assesses the likelihood of heart disease. Follow up with a healthcare provider for diagnostic tests if needed.
         """
     )
 
@@ -101,22 +61,18 @@ if selected == "Heart Disease Prediction":
     st.title("🧬 Heart Disease Prediction")
     st.markdown(
         """
-        **Upload patient data** to predict the likelihood of heart disease and receive advice on next steps.
+        **Upload patient data** to predict the likelihood of heart disease.
 
         ### 🔓 How to Use:
-        1. **Download the example data** (provided below) to see the required format for your input file.
+        1. **Download the example data** below.
         2. **Upload your own data** in CSV or Excel format.
         3. Click **Predict Heart Disease** to generate predictions.
-        4. View the results and get tips based on predictions.
         """
     )
     
-    # Add a download button for the example file from GitHub
-    st.subheader("📂 Download Example Patient Data")
+    # Add a download button for the example file
     example_file_url = "https://github.com/HarshitSuru/HeartDiseasePrediction/raw/main/Heart-Disease-Prediction/example_patient_data.xlsx"
-
     try:
-        # Download example data file from GitHub
         response = requests.get(example_file_url)
         if response.status_code == 200:
             st.download_button(
@@ -131,12 +87,10 @@ if selected == "Heart Disease Prediction":
         st.error(f"⚠️ Error downloading example data: {e}")
     
     # File upload section
-    st.subheader("📂 Upload Your Patient Data")
     uploaded_file = st.file_uploader("Upload a CSV/Excel file with patient data:", type=["csv", "xlsx"])
 
     if uploaded_file:
         try:
-            # Check and display file structure
             if uploaded_file.name.endswith('.csv'):
                 data = pd.read_csv(uploaded_file)
             else:
@@ -146,39 +100,23 @@ if selected == "Heart Disease Prediction":
             missing_columns = [col for col in required_columns if col not in data.columns]
 
             if missing_columns:
-                st.error(f"⚠️ The uploaded file is missing the following required columns: {', '.join(missing_columns)}")
+                st.error(f"⚠️ The uploaded file is missing: {', '.join(missing_columns)}")
             else:
                 st.subheader("🔢 Uploaded Data")
                 st.write(data.head())
                 
-                # Visualization of data features
+                # Visualizations
                 st.subheader("📊 Data Analysis & Visualizations")
-                st.markdown("### Age Distribution:")
-                fig_age = px.histogram(data, x='age', title="Age Distribution", labels={'age': 'Age'})
-                st.plotly_chart(fig_age)
-                
-                st.markdown("### Cholesterol Levels:")
-                fig_chol = px.histogram(data, x='chol', title="Cholesterol Levels Distribution", labels={'chol': 'Cholesterol Level'})
-                st.plotly_chart(fig_chol)
-                
-                st.markdown("### Sex Distribution:")
-                fig_sex = px.pie(data, names='sex', title="Sex Distribution", labels={'sex': 'Sex'}, hole=0.3)
-                st.plotly_chart(fig_sex)
-                
-                st.markdown("### Prediction Overview:")
-                prediction_count = data['Prediction'].value_counts() if 'Prediction' in data.columns else pd.Series({0: 0, 1: 0})
-                fig_pred = px.bar(x=prediction_count.index, y=prediction_count.values, title="Heart Disease Predictions", labels={'x': 'Prediction', 'y': 'Count'})
-                st.plotly_chart(fig_pred)
+                st.plotly_chart(px.histogram(data, x='age', title="Age Distribution", labels={'age': 'Age'}))
+                st.plotly_chart(px.histogram(data, x='chol', title="Cholesterol Levels Distribution", labels={'chol': 'Cholesterol Level'}))
+                st.plotly_chart(px.pie(data, names='sex', title="Sex Distribution", hole=0.3))
 
         except Exception as e:
             st.error(f"⚠️ Error processing file: {e}")
 
-    # Load the model from GitHub
-    heart_disease_model = None
+    # Load model
     model_url = "https://github.com/HarshitSuru/HeartDiseasePrediction/raw/main/Heart-Disease-Prediction/saved_models/heart_disease_model.sav"
-
     try:
-        # Download model file from GitHub
         response = requests.get(model_url)
         if response.status_code == 200:
             with open("heart_disease_model.sav", "wb") as model_file:
@@ -191,62 +129,41 @@ if selected == "Heart Disease Prediction":
     except Exception as e:
         st.error(f"⚠️ Error loading model: {e}")
 
-    if uploaded_file and heart_disease_model and not missing_columns:
+    if uploaded_file and 'heart_disease_model' in locals() and not missing_columns:
         try:
-            # Ensure only the required columns are in the data
-            required_columns = ['age', 'sex', 'cp', 'trestbps', 'chol', 'fbs', 'restecg', 'thalach', 'exang', 'oldpeak', 'slope', 'ca', 'thal']
-            
-            # Keep only the required columns (drop any extra ones like 'cdm')
             data = data[required_columns]
-            
-            # Make predictions
             if st.button("Predict Heart Disease"):
                 predictions = heart_disease_model.predict(data)
-                data['Prediction'] = predictions
-                st.subheader("🔍 Predictions")
-                st.write(data)
-                
-                # Visualize predictions
-                fig = px.histogram(data, x='Prediction', title="Heart Disease Predictions", labels={'x': 'Prediction'}, text_auto=True)
-                st.plotly_chart(fig)
+                st.subheader("🩺 Prediction Results")
+                st.write(predictions)
+                st.markdown(
+                    """
+                    ### Interpretation of Results:
+                    - **1**: High likelihood of heart disease.
+                    - **0**: Low likelihood of heart disease.
 
-                # Detailed Advice based on predictions
-                st.subheader("⚠️ Next Steps and Recommendations")
-                for index, row in data.iterrows():
-                    if row['Prediction'] == 1:
-                        st.write(f"Patient {index+1} may be at risk for heart disease.")
-                        st.write("""
-                        **Recommendations for High-Risk Individuals:**
-                        - Consult with a healthcare provider for a thorough examination.
-                        - Get diagnostic tests such as an ECG, cholesterol test, and stress test.
-                        - If diagnosed with heart disease, adhere to prescribed medications and treatments.
-                        - Follow lifestyle changes: healthy diet, regular exercise, and stress management.
-                        """)
-                    else:
-                        st.write(f"Patient {index+1} is not at risk for heart disease.")
-                        st.write("""
-                        **Recommendations for Low-Risk Individuals:**
-                        - Maintain a healthy lifestyle with regular physical activity.
-                        - Continue monitoring health metrics such as blood pressure, cholesterol, and blood sugar levels.
-                        - Schedule regular check-ups with your doctor.
-                        """)
-
+                    #### Next Steps:
+                    - If positive, consult a healthcare provider immediately.
+                    - This tool is for guidance only, not a substitute for medical advice.
+                    """
+                )
         except Exception as e:
             st.error(f"⚠️ Error during prediction: {e}")
-
 # About Us page
 if selected == "About Us":
     st.title("👨‍💼 About Us")
     st.markdown(
         """
-        ### We aim to harness technology for better health management.
+        ### Our Mission:
+        We aim to leverage technology for better health outcomes by providing easy-to-use tools for health analysis.
 
-        #### Connect with the Developer:
-        - [GitHub](https://github.com/HarshitSuru/)
-        - [LinkedIn](https://www.linkedin.com/in/suru-harshit-4863372bb)
-        - Email: [suruharshit2005@gmail.com](mailto:suruharshit2005@gmail.com)
+        #### Contact:
+        - **GitHub**: [HarshitSuru](https://github.com/HarshitSuru/)
+        - **LinkedIn**: [Harshit Suru](https://www.linkedin.com/in/suru-harshit-4863372bb)
+        - **Email**: [suruharshit2005@gmail.com](mailto:suruharshit2005@gmail.com)
 
         #### Disclaimer:
-        This tool provides **preliminary insights** into heart disease risk and is **not** intended for use as a diagnostic tool. Please consult your healthcare provider for any medical concerns.
+        - This application is a supportive tool, not a diagnostic device. Always consult medical professionals for health concerns.
         """
     )
+
