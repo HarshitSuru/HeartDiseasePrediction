@@ -1,173 +1,112 @@
 import os
 import pickle
-import pandas as pd
 import streamlit as st
-import plotly.express as px
-from streamlit_option_menu import option_menu
+import pandas as pd
 import requests
+from io import BytesIO
+from streamlit_option_menu import option_menu
 
 # Set page configuration
-st.set_page_config(
-    page_title="Health Assistant - Heart Disease Prediction",
-    layout="wide",
-    page_icon="🧑‍⚕️",
-)
+st.set_page_config(page_title="Heart Disease Prediction",
+                   layout="wide",
+                   page_icon="❤️")
 
-# Sidebar navigation
+# Sidebar navigation styles
+sidebar_style = """
+    <style>
+        .css-18e3th9 {padding: 0;}
+        .css-1d391kg {padding: 1rem;}
+        .css-1kpfpqw {padding: 1rem;}
+        .css-1y4g43s {text-align: center;}
+    </style>
+"""
+st.markdown(sidebar_style, unsafe_allow_html=True)
+
+# Sidebar for navigation
 with st.sidebar:
-    selected = option_menu(
-        "Health Assistant",
-        ["Home", "Heart Disease Prediction", "About Us"],
-        icons=["house", "heart", "info-circle"],
-        menu_icon="activity",  
-        default_index=0,
-        styles={
-            "container": {"padding": "2px", "background-color": "#34495E"},
-            "icon": {"color": "#F39C12", "font-size": "18px"},  
-            "nav-link": {"font-size": "14px", "text-align": "center", "margin": "3px", "--hover-color": "#F39C12"},
-            "nav-link-selected": {"background-color": "#F39C12"},
-        }
-    )
+    selected = option_menu('Heart Disease Prediction System',
+                           ['Heart Disease Prediction'],
+                           menu_icon='hospital-fill',
+                           icons=['heart'],
+                           default_index=0,
+                           styles={
+                               "container": {"padding": "2px", "background-color": "#34495E"},
+                               "icon": {"color": "#F39C12", "font-size": "18px"},
+                               "nav-link": {"font-size": "14px", "text-align": "center", "margin": "3px", "--hover-color": "#F39C12"},
+                               "nav-link-selected": {"background-color": "#F39C12"},
+                           })
 
-# Home page
-if selected == "Home":
-    st.title("🧑‍⚕️ Welcome to Health Assistant")
-    st.markdown(
-        """
-        ### 🌟 About This Application
-        The Health Assistant uses a machine learning model to predict the likelihood of heart disease 
-        based on various health indicators.
-
-        ### 🔉 Important
-        This tool provides **preliminary insights** only. Always consult a healthcare provider for a proper diagnosis.
-
-        ### ❤️ What is Heart Disease?
-        Heart disease refers to conditions affecting the heart, including coronary artery disease and others. Common causes include high blood pressure, high cholesterol, and smoking.
-
-        #### Preventive Measures:
-        - Healthy diet
-        - Regular exercise
-        - Avoid smoking and excessive alcohol
-        - Monitor blood pressure, cholesterol, and sugar levels
-        - Manage stress
-
-        ### 📈 Prediction Insights
-        This app assesses the likelihood of heart disease. Follow up with a healthcare provider for diagnostic tests if needed.
-        """
-    )
-
-# Heart Disease Prediction page
-if selected == "Heart Disease Prediction":
-    st.title("🧬 Heart Disease Prediction")
-    st.markdown(
-        """
-        **Upload patient data** to predict the likelihood of heart disease.
-
-        ### 🔓 How to Use:
-        1. **Download the example data** below.
-        2. **Upload your own data** in CSV or Excel format.
-        3. Click **Predict Heart Disease** to generate predictions.
-        """
-    )
-    
-    # Add a download button for the example file
-    example_file_url = "https://github.com/HarshitSuru/HeartDiseasePrediction/raw/main/Heart-Disease-Prediction/example_patient_data.xlsx"
-    try:
-        response = requests.get(example_file_url)
-        if response.status_code == 200:
-            st.download_button(
-                label="Download Example Data",
-                data=response.content,
-                file_name="example_patient_data.xlsx",
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            )
-        else:
-            st.error("❌ Failed to download example data from GitHub.")
-    except Exception as e:
-        st.error(f"⚠️ Error downloading example data: {e}")
-    
-    # File upload section
-    uploaded_file = st.file_uploader("Upload a CSV/Excel file with patient data:", type=["csv", "xlsx"])
-
-    # Load model only once and store in session state
-    if 'heart_disease_model' not in st.session_state:
-        model_url = "https://github.com/HarshitSuru/HeartDiseasePrediction/raw/main/Heart-Disease-Prediction/saved_models/heart_disease_model.sav"
-        try:
-            response = requests.get(model_url)
-            if response.status_code == 200:
-                with open("heart_disease_model.sav", "wb") as model_file:
-                    model_file.write(response.content)
-                with open("heart_disease_model.sav", "rb") as model_file:
-                    heart_disease_model = pickle.load(model_file)
-                st.session_state.heart_disease_model = heart_disease_model
-                st.success("✅ Model loaded successfully! You can now proceed with predictions.")
-            else:
-                st.error("❌ Failed to download model file from GitHub.")
-        except Exception as e:
-            st.error(f"⚠️ Error loading model: {e}")
+# Function to download model from GitHub
+def download_model():
+    model_url = "https://github.com/HarshitSuru/HeartDiseasePrediction/raw/main/Heart-Disease-Prediction/saved_models/heart_disease_model.sav"
+    response = requests.get(model_url)
+    if response.status_code == 200:
+        model = pickle.load(BytesIO(response.content))
+        return model
     else:
-        heart_disease_model = st.session_state.heart_disease_model
+        st.error("Failed to download model from GitHub.")
+        return None
 
-    if uploaded_file:
-        try:
-            if uploaded_file.name.endswith('.csv'):
-                st.session_state.data = pd.read_csv(uploaded_file)
-            else:
-                st.session_state.data = pd.read_excel(uploaded_file)
+# Download the model
+heart_disease_model = download_model()
 
-            required_columns = ['age', 'sex', 'cp', 'trestbps', 'chol', 'fbs', 'restecg', 'thalach', 'exang', 'oldpeak', 'slope', 'ca', 'thal']
-            missing_columns = [col for col in required_columns if col not in st.session_state.data.columns]
+# Function to handle predictions
+def get_predictions(model, user_input):
+    return model.predict([user_input])
 
-            if missing_columns:
-                st.error(f"⚠️ The uploaded file is missing: {', '.join(missing_columns)}")
-            else:
-                st.subheader("🔢 Uploaded Data")
-                st.write(st.session_state.data.head())
-                
-                # Visualizations
-                st.subheader("📊 Data Analysis & Visualizations")
-                st.plotly_chart(px.histogram(st.session_state.data, x='age', title="Age Distribution", labels={'age': 'Age'}))
-                st.plotly_chart(px.histogram(st.session_state.data, x='chol', title="Cholesterol Levels Distribution", labels={'chol': 'Cholesterol Level'}))
-                st.plotly_chart(px.pie(st.session_state.data, names='sex', title="Sex Distribution", hole=0.3))
+# Heart Disease Prediction Page
+if selected == 'Heart Disease Prediction':
+    st.title('Heart Disease Prediction using ML')
 
-        except Exception as e:
-            st.error(f"⚠️ Error processing file: {e}")
+    # Get input data from user
+    col1, col2, col3 = st.columns(3)
+    with col1: age = st.text_input('Age')
+    with col2: sex = st.text_input('Sex')
+    with col3: cp = st.text_input('Chest Pain types')
+    with col1: trestbps = st.text_input('Resting Blood Pressure')
+    with col2: chol = st.text_input('Serum Cholestoral in mg/dl')
+    with col3: fbs = st.text_input('Fasting Blood Sugar > 120 mg/dl')
+    with col1: restecg = st.text_input('Resting Electrocardiographic results')
+    with col2: thalach = st.text_input('Maximum Heart Rate achieved')
+    with col3: exang = st.text_input('Exercise Induced Angina')
+    with col1: oldpeak = st.text_input('ST depression induced by exercise')
+    with col2: slope = st.text_input('Slope of the peak exercise ST segment')
+    with col3: ca = st.text_input('Major vessels colored by fluoroscopy')
+    with col1: thal = st.text_input('thal: 0 = normal; 1 = fixed defect; 2 = reversible defect')
 
-    if 'data' in st.session_state and heart_disease_model:
-        try:
-            data = st.session_state.data[required_columns]  # Ensure only the required columns are passed to the model
-            if st.button("Predict Heart Disease"):
-                predictions = heart_disease_model.predict(data)
-                st.subheader("🩺 Prediction Results")
-                st.write(predictions)
-                st.markdown(
-                    """
-                    ### Interpretation of Results:
-                    - **1**: High likelihood of heart disease.
-                    - **0**: Low likelihood of heart disease.
+    # File upload section for the user to upload their own data
+    uploaded_file = st.file_uploader("Upload a CSV or Excel file with heart disease data:", type=["csv", "xlsx"])
 
-                    #### Next Steps:
-                    - If positive, consult a healthcare provider immediately.
-                    - This tool is for guidance only, not a substitute for medical advice.
-                    """
-                )
-        except Exception as e:
-            st.error(f"⚠️ Error during prediction: {e}")
+    if uploaded_file is not None:
+        # Read the uploaded file into a DataFrame
+        if uploaded_file.name.endswith(".csv"):
+            data = pd.read_csv(uploaded_file)
+        elif uploaded_file.name.endswith(".xlsx"):
+            data = pd.read_excel(uploaded_file)
 
-# About Us page
-if selected == "About Us":
-    st.title("👨‍💼 About Us")
-    st.markdown(
-        """
-        ### Our Mission:
-        We aim to leverage technology for better health outcomes by providing easy-to-use tools for health analysis.
+        # Display uploaded data
+        st.subheader("Uploaded Data")
+        st.write(data)
 
-        #### Contact:
-        - **GitHub**: [HarshitSuru](https://github.com/HarshitSuru/)
-        - **LinkedIn**: [Harshit Suru](https://www.linkedin.com/in/suru-harshit-4863372bb)
-        - **Email**: [suruharshit2005@gmail.com](mailto:suruharshit2005@gmail.com)
+        # Predict based on the uploaded data
+        if heart_disease_model:
+            try:
+                # Make sure the necessary columns exist
+                required_columns = ['age', 'sex', 'cp', 'trestbps', 'chol', 'fbs', 'restecg', 'thalach', 'exang', 'oldpeak', 'slope', 'ca', 'thal']
+                missing_columns = [col for col in required_columns if col not in data.columns]
 
-        #### Disclaimer:
-        - This application is a supportive tool, not a diagnostic device. Always consult medical professionals for health concerns.
-        """
-    )
+                if missing_columns:
+                    st.error(f"Missing columns in the uploaded data: {', '.join(missing_columns)}")
+                else:
+                    # Predict heart disease for each row
+                    predictions = heart_disease_model.predict(data[required_columns])
+                    data['Heart Disease Prediction'] = predictions
+
+                    # Display results
+                    st.subheader("Prediction Results")
+                    st.write(data)
+
+            except Exception as e:
+                st.error(f"Error during prediction: {e}")
+        else:
+            st.error("Model could not be loaded. Please try again.")
