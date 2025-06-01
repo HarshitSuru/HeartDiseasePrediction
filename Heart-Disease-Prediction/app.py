@@ -105,7 +105,7 @@ if selected == "Heart Disease Prediction":
     
     # File upload section
     st.subheader("📂 Upload Your Patient Data")
-    uploaded_file = st.file_uploader("Upload a CSV/Excel file with patient data:", type=["csv", "xlsx"])
+    uploaded_file = st.file_uploader("Upload CSV/Excel (one or more patients):", type=["csv", "xlsx"])
 
     if uploaded_file:
         try:
@@ -152,12 +152,22 @@ if selected == "Heart Disease Prediction":
                         if st.button("Predict Heart Disease"):
                             predictions = heart_disease_model.predict(data)
                             data['Prediction'] = predictions
+                            prediction_labels = {0: "Healthy Heart", 1: "Heart Disease"}
+                            data['Result'] = data['Prediction'].map(prediction_labels).fillna("Unknown")
                             st.subheader("🔍 Predictions")
-                            st.write(data)
+                            display_columns = list(data.columns)
+                            # Ensure 'Result' is next to 'Prediction' if both exist
+                            if 'Prediction' in display_columns and 'Result' in display_columns:
+                                pred_idx = display_columns.index('Prediction')
+                                if 'Result' in display_columns: # check if 'Result' is actually in display_columns
+                                    display_columns.insert(pred_idx + 1, display_columns.pop(display_columns.index('Result')))
+                            st.write(data[display_columns])
                             
                             # Visualize predictions
-                            fig = px.histogram(data, x='Prediction', title="Heart Disease Predictions", labels={'x': 'Prediction'}, text_auto=True)
+                            fig = px.histogram(data, x='Prediction', title="Heart Disease Prediction Distribution (0 or 1)", labels={'Prediction': 'Predicted Value (0: Healthy, 1: Disease)'}, text_auto=True)
                             st.plotly_chart(fig)
+                            fig_labels = px.histogram(data, x='Result', title="Heart Disease Prediction Summary", labels={'Result': 'Prediction Result'}, text_auto=True, category_orders={"Result": ["Healthy Heart", "Heart Disease", "Unknown"]})
+                            st.plotly_chart(fig_labels)
                     except Exception as e:
                         st.error(f"⚠️ Error during prediction: {e}")
         except Exception as e:
